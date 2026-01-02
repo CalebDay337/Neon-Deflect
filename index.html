@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Neon Deflect</title>
+    <style>
+        body { background: #111; color: white; text-align: center; font-family: sans-serif; }
+        canvas { border: 5px solid #00f2ff; background: #000; box-shadow: 0 0 20px #00f2ff; }
+    </style>
+</head>
+<body>
+    <h1>Neon Deflect</h1>
+    <canvas id="gameCanvas" width="800" height="400"></canvas>
+    <p>Use your Mouse to move the paddle.</p>
+
+    <script>
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+
+        let ballX = 400, ballY = 200, ballSpeedX = 5, ballSpeedY = 5;
+        let playerY = 150, computerY = 150;
+        const PADDLE_HEIGHT = 80, PADDLE_WIDTH = 10;
+
+        canvas.addEventListener('mousemove', e => {
+            let rect = canvas.getBoundingClientRect();
+            playerY = e.clientY - rect.top - PADDLE_HEIGHT / 2;
+        });
+
+        function update() {
+            ballX += ballSpeedX;
+            ballY += ballSpeedY;
+
+            // Simple AI for computer
+            if (computerY + PADDLE_HEIGHT / 2 < ballY - 20) computerY += 4;
+            else if (computerY + PADDLE_HEIGHT / 2 > ballY + 20) computerY -= 4;
+
+            // Wall bounces
+            if (ballY < 0 || ballY > canvas.height) ballSpeedY = -ballSpeedY;
+
+            // Paddle collisions
+            if (ballX < PADDLE_WIDTH && ballY > playerY && ballY < playerY + PADDLE_HEIGHT) ballSpeedX = -ballSpeedX;
+            if (ballX > canvas.width - PADDLE_WIDTH && ballY > computerY && ballY < computerY + PADDLE_HEIGHT) ballSpeedX = -ballSpeedX;
+
+            // Reset ball if out of bounds
+            if (ballX < 0 || ballX > canvas.width) { ballX = 400; ballSpeedX = -ballSpeedX; }
+        }
+
+        function draw() {
+            ctx.fillStyle = "black";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = "#00f2ff"; // Neon Blue
+            ctx.fillRect(0, playerY, PADDLE_WIDTH, PADDLE_HEIGHT);
+            ctx.fillRect(canvas.width - PADDLE_WIDTH, computerY, PADDLE_WIDTH, PADDLE_HEIGHT);
+            ctx.beginPath();
+            ctx.arc(ballX, ballY, 8, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        function gameLoop() { update(); draw(); requestAnimationFrame(gameLoop); }
+        gameLoop();
+    </script>
+</body>
+</html>
